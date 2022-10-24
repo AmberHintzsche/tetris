@@ -41,6 +41,11 @@ class Figure:  # definition of tetris pieces/tetrominoes
     def image(self):
         return self.figures[self.type][self.rotation]
 
+    def reset(self):
+        self.x = 3
+        self.y = 0
+        return self
+
     def rotate(self): # when rotate is called, find the next value on its row in figures
         self.rotation = (self.rotation + 1) % len(self.figures[self.type])
 
@@ -58,6 +63,8 @@ class Tetris:
     y = 60
     zoom = 20
     figure = None
+    hold_queue: Figure = None
+    holdable = True
 
     def __init__(self, height, width):
         self.height = height
@@ -65,6 +72,8 @@ class Tetris:
         self.field = []
         self.score = 0
         self.state = "start"
+        self.hold_queue = None #this defines what piece is being held, default is none
+        self.holdable = True
         for i in range(height):
             new_line = []
             for j in range(width):
@@ -119,6 +128,7 @@ class Tetris:
                     self.field[i + self.figure.y][j + self.figure.x] = self.figure.color
         self.break_lines()
         self.new_figure()
+        self.holdable = True
         if self.intersects():
             self.state = "gameover"
 
@@ -139,6 +149,19 @@ class Tetris:
         self.figure.reverse_rotate()
         if self.intersects():
             self.figure.rotation = old_rotation
+
+    def hold(self):
+        old_figure = self.figure
+        if self.holdable:
+            self.holdable = False
+            if self.hold_queue == None:
+                self.hold_queue = old_figure
+                self.new_figure()
+            else:
+                self.figure = Figure.reset(self.hold_queue)
+                self.hold_queue = old_figure
+        else:
+            return
 
 
 # Initialize the game engine
@@ -182,6 +205,8 @@ while not done:
                 game.rotate()
             if event.key == pygame.K_x:
                 game.reverse_rotate()
+            if event.key == pygame.K_UP:
+                game.hold()
             if event.key == pygame.K_DOWN:
                 pressing_down = True
             if event.key == pygame.K_LEFT:
@@ -199,7 +224,7 @@ while not done:
 
     screen.fill(WHITE)
 
-    for i in range(game.height):
+    for i in range(game.height): # draws playing area
         for j in range(game.width):
             pygame.draw.rect(screen, GRAY, [game.x + game.zoom * j, game.y + game.zoom * i, game.zoom, game.zoom], 1)
             if game.field[i][j] > 0:
