@@ -1,4 +1,3 @@
-
 import pygame
 import random
 
@@ -13,18 +12,23 @@ colors = [
 ]
 
 
-class Figure:
+class Figure:  # definition of tetris pieces/tetrominoes
     x = 0
     y = 0
+    # pieces are built by selecting 4 elements from this matrix
+    # [0, 1, 2, 3]
+    # [4, 5, 6, 7]
+    # [8, 9,10,11]
+    # [12,13,14,15]
 
-    figures = [
-        [[1, 5, 9, 13], [4, 5, 6, 7]],
-        [[4, 5, 9, 10], [2, 6, 5, 9]],
-        [[6, 7, 9, 10], [1, 5, 6, 10]],
-        [[1, 2, 5, 9], [0, 4, 5, 6], [1, 5, 9, 8], [4, 5, 6, 10]],
-        [[1, 2, 6, 10], [5, 6, 7, 9], [2, 6, 10, 11], [3, 5, 6, 7]],
-        [[1, 4, 5, 6], [1, 4, 5, 9], [4, 5, 6, 9], [1, 5, 6, 9]],
-        [[1, 2, 5, 6]],
+    figures = [  # each row is a different tetris piece and its rotations
+        [[1, 5, 9, 13], [4, 5, 6, 7]],  # I-piece
+        [[4, 5, 9, 10], [2, 6, 5, 9]],  # z-piece
+        [[6, 7, 9, 10], [1, 5, 6, 10]],  # s-piece
+        [[1, 2, 5, 9], [0, 4, 5, 6], [1, 5, 9, 8], [4, 5, 6, 10]],  # j-piece
+        [[1, 2, 6, 10], [5, 6, 7, 9], [2, 6, 10, 11], [3, 5, 6, 7]],  # l-piece
+        [[1, 4, 5, 6], [1, 4, 5, 9], [4, 5, 6, 9], [1, 5, 6, 9]],  # t-piece
+        [[1, 2, 5, 6]],  # O-piece
     ]
 
     def __init__(self, x, y):
@@ -37,9 +41,11 @@ class Figure:
     def image(self):
         return self.figures[self.type][self.rotation]
 
-    def rotate(self):
+    def rotate(self): # when rotate is called, find the next value on its row in figures
         self.rotation = (self.rotation + 1) % len(self.figures[self.type])
 
+    def reverse_rotate(self):
+        self.rotation = (self.rotation - 1) % len(self.figures[self.type])
 
 class Tetris:
     level = 2
@@ -65,10 +71,10 @@ class Tetris:
                 new_line.append(0)
             self.field.append(new_line)
 
-    def new_figure(self):
+    def new_figure(self): # spawns new piece at the top of the screen
         self.figure = Figure(3, 0)
 
-    def intersects(self):
+    def intersects(self): #collision detection
         intersection = False
         for i in range(4):
             for j in range(4):
@@ -128,6 +134,12 @@ class Tetris:
         if self.intersects():
             self.figure.rotation = old_rotation
 
+    def reverse_rotate(self):
+        old_rotation = self.figure.rotation
+        self.figure.reverse_rotate()
+        if self.intersects():
+            self.figure.rotation = old_rotation
+
 
 # Initialize the game engine
 pygame.init()
@@ -166,8 +178,10 @@ while not done:
         if event.type == pygame.QUIT:
             done = True
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP:
+            if event.key == pygame.K_z:
                 game.rotate()
+            if event.key == pygame.K_x:
+                game.reverse_rotate()
             if event.key == pygame.K_DOWN:
                 pressing_down = True
             if event.key == pygame.K_LEFT:
@@ -180,8 +194,8 @@ while not done:
                 game.__init__(20, 10)
 
     if event.type == pygame.KEYUP:
-            if event.key == pygame.K_DOWN:
-                pressing_down = False
+        if event.key == pygame.K_DOWN:
+            pressing_down = False
 
     screen.fill(WHITE)
 
@@ -217,6 +231,5 @@ while not done:
     clock.tick(fps)
 
 pygame.quit()
-#view raw
-#tetris.py hosted with ❤ by GitHub
-
+# view raw
+# tetris.py hosted with ❤ by GitHub
