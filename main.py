@@ -63,8 +63,13 @@ class Tetris:
     y = 60
     zoom = 20
     figure = None
-    hold_queue: Figure = None
+    hold_field = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+    hold_figure = None
     holdable = True
+    hold_x = 5
+    hold_y = 30
+    hold_height = 4
+    hold_width = 4
 
     def __init__(self, height, width):
         self.height = height
@@ -72,7 +77,7 @@ class Tetris:
         self.field = []
         self.score = 0
         self.state = "start"
-        self.hold_queue = None #this defines what piece is being held, default is none
+        self.hold_figure = None #this defines what piece is being held, default is none
         self.holdable = True
         for i in range(height):
             new_line = []
@@ -154,12 +159,12 @@ class Tetris:
         old_figure = self.figure
         if self.holdable:
             self.holdable = False
-            if self.hold_queue == None:
-                self.hold_queue = old_figure
+            if self.hold_figure == None:
+                self.hold_figure = old_figure
                 self.new_figure()
             else:
-                self.figure = Figure.reset(self.hold_queue)
-                self.hold_queue = old_figure
+                self.figure = Figure.reset(self.hold_figure)
+                self.hold_figure = old_figure
         else:
             return
 
@@ -231,6 +236,7 @@ while not done:
                 pygame.draw.rect(screen, colors[game.field[i][j]],
                                  [game.x + game.zoom * j + 1, game.y + game.zoom * i + 1, game.zoom - 2, game.zoom - 1])
 
+
     if game.figure is not None:
         for i in range(4):
             for j in range(4):
@@ -240,6 +246,25 @@ while not done:
                                      [game.x + game.zoom * (j + game.figure.x) + 1,
                                       game.y + game.zoom * (i + game.figure.y) + 1,
                                       game.zoom - 2, game.zoom - 2])
+   # make sure this is all hold
+    for i in range(game.hold_height): # draws playing area
+        for j in range(game.hold_width):
+            pygame.draw.rect(screen, GRAY, [game.hold_x + game.zoom * j, game.hold_y + game.zoom * i, game.zoom, game.zoom], 1)
+            if game.hold_field[i][j] > 0:
+                pygame.draw.rect(screen, colors[game.field[i][j]],
+                                 [game.hold_x + game.zoom * j + 1, game.hold_y + game.zoom * i + 1, game.zoom - 2, game.zoom - 1])
+
+    if game.hold_figure is not None:
+        for i in range(4):
+            for j in range(4):
+                p = i * 4 + j
+                if p in game.hold_figure.image():
+                    pygame.draw.rect(screen, colors[game.hold_figure.color],
+                                     [game.hold_x + game.zoom * (j) + 1,
+                                      game.hold_y + game.zoom * (i) + 1,
+                                      game.zoom - 2, game.zoom - 2])
+
+
 
     font = pygame.font.SysFont('Calibri', 25, True, False)
     font1 = pygame.font.SysFont('Calibri', 65, True, False)
